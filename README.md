@@ -1,37 +1,204 @@
-# Implementing-a-Multi-Environment-Application-Deployment-with-Kustomize
+# Kustomize Capstone: Multi-Environment Kubernetes Deployment
 
-### 1. Hypothetical Use Case:
-You are tasked with deploying a web application in a Kubernetes environment. The application will have different configurations for development, staging, and production environments. Your goal is to utilize Kustomize to manage these configurations efficiently and integrate the process into a CI/CD pipeline.
+This project demonstrates how to deploy a web application to a Kubernetes cluster using [Kustomize](https://kustomize.io/) with separate configurations for **development**, **staging**, and **production** environments. It also includes a CI/CD pipeline (GitHub Actions) to automate deployments based on environment-specific changes.
 
-### 2. Tasks:
-#### Task 1: Set Up Your Project:
-- Create a new project directory named `kustomize-capstone`.
-Inside the directory, structure it with Kustomize conventions: `base/` and `overlays/` (subdirectories for `dev`, `staging`, `prod`).
+---
 
-### Task 2: Initialize Git:
-- Initialize a Git repository in your `kustomize-capstone` directory.
-- Create a `.gitignore` file to exclude unnecessary files.
+## 🗂️ Project Structure
 
-#### Task 3: Define Base Configuration:
-- In the `base/` directory, define Kubernetes resources like Deployment, Service, etc., for your web application.
-- Create a `kustomization.yaml` file in `base/` to include these resources.
+```plaintext
+kustomize-capstone/
+│
+├── base/                       # Base Kubernetes resources (common across all environments)
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── kustomization.yaml
+│
+├── overlays/                  # Environment-specific customizations
+│   ├── dev/
+│   │   └── kustomization.yaml
+│   ├── staging/
+│   │   └── kustomization.yaml
+│   └── prod/
+│       └── kustomization.yaml
+│
+├── .github/workflows/         # GitHub Actions CI/CD pipelines
+│   └── deploy.yaml
+│
+├── .gitignore
+└── README.md
+📌 Use Case
+You are deploying a web application to Kubernetes clusters for development, staging, and production, using Kustomize to manage configuration differences and GitHub Actions for continuous delivery.
 
-#### Task 4: Create Environment-Specific Overlays:
-- In each subdirectory of `overlays/`, create a `kustomization.yaml` that customizes the base configuration for that environment.
-- Implement variations for each environment (e.g., different replica counts, resource limits, or environment variables).
+✅ Tasks Completed
+1. Set Up Project
+Created kustomize-capstone project directory.
 
-#### Task 5: Integrate with a CI/CD Pipeline:
-- Choose a CI/CD platform (e.g., GitHub Actions, Jenkins).
-- Set up a pipeline that deploys your application using Kustomize. The pipeline should trigger on code changes.
+Structured project using Kustomize conventions: base/, overlays/dev, overlays/staging, overlays/prod.
 
-#### Task 6: Test the CI/CD Pipeline:
-- Make changes in your Kustomize configurations and push to your repository.
-- Verify that the CI/CD pipeline correctly applies these changes to a Kubernetes cluster.
+2. Git Initialization
+Initialized a Git repository.
 
-#### Task 7: Manage Secrets and ConfigMaps:
-- Use Kustomize to generate ConfigMaps and Secrets. Ensure sensitive data is handled securely.
-Apply these configurations in your overlays for different environments.
+Created a .gitignore to exclude generated and sensitive files.
 
-#### Task 8: Document Your Work:
-- Create a `README.md` in your project explaining the structure and how to deploy the application using Kustomize.
-- Include instructions for setting up and testing the CI/CD pipeline.
+3. Base Configuration
+Defined common Kubernetes manifests in the base/ folder.
+
+Created a kustomization.yaml to reference base manifests.
+
+4. Environment-Specific Overlays
+Added overlays for dev, staging, and prod.
+
+Customized each environment with:
+
+Varying replica counts
+
+Specific environment variables
+
+Different resource requests/limits
+
+5. CI/CD Integration
+Set up GitHub Actions to automate deployment.
+
+Configured the workflow to:
+
+Detect changes in the respective overlay
+
+Deploy to the targeted Kubernetes namespace or cluster using kubectl apply -k overlays/<env>
+
+6. Pipeline Testing
+Successfully tested updates to Kustomize overlays.
+
+Verified deployments are automatically applied to the correct Kubernetes environment.
+
+7. Secrets and ConfigMaps
+Used Kustomize generators to create:
+
+ConfigMaps (from literal or file)
+
+Secrets (from literals or external sources)
+
+Environment-specific secrets and configs are scoped to overlays.
+
+🚀 Deployment Instructions
+Prerequisites
+Kubernetes cluster (e.g., Minikube, EKS, GKE)
+
+kubectl configured and authenticated
+
+Kustomize CLI (or kubectl kustomize plugin)
+
+GitHub repository with Actions enabled
+
+Deploy Manually
+To deploy an environment manually:
+
+bash
+Copy
+Edit
+# Clone the repo
+git clone https://github.com/kelomo2502/kustomize-capstone.git
+cd kustomize-capstone
+
+# Deploy to dev
+kubectl apply -k overlays/dev
+
+# Or deploy to staging
+kubectl apply -k overlays/staging
+
+# Or deploy to production
+kubectl apply -k overlays/prod
+🔁 CI/CD Pipeline with GitHub Actions
+Triggering Deployment
+The pipeline is triggered automatically when changes are pushed to the overlays:
+
+yaml
+Copy
+Edit
+on:
+  push:
+    paths:
+      - 'overlays/dev/**'
+      - 'overlays/staging/**'
+      - 'overlays/prod/**'
+Sample Workflow (.github/workflows/deploy.yaml)
+yaml
+Copy
+Edit
+name: Deploy with Kustomize
+
+on:
+  push:
+    paths:
+      - 'overlays/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+
+    - name: Deploy Kustomize Overlay
+      run: |
+        if [[ "${{ github.event.head_commit.message }}" == *"[dev]"* ]]; then
+          kubectl apply -k overlays/dev
+        elif [[ "${{ github.event.head_commit.message }}" == *"[staging]"* ]]; then
+          kubectl apply -k overlays/staging
+        elif [[ "${{ github.event.head_commit.message }}" == *"[prod]"* ]]; then
+          kubectl apply -k overlays/prod
+        fi
+Note: Add cluster authentication using a service account, GitHub secret, or external action for real deployments.
+
+🔐 Secrets & ConfigMaps
+Manage secrets and configs as follows:
+
+In kustomization.yaml:
+
+yaml
+Copy
+Edit
+configMapGenerator:
+  - name: app-config
+    literals:
+      - ENV=development
+      - DEBUG=true
+
+secretGenerator:
+  - name: db-secret
+    literals:
+      - DB_USER=admin
+      - DB_PASS=securepassword
+Avoid committing sensitive secrets. Use .gitignore and secret management tools like Sealed Secrets or External Secrets.
+
+🧪 Testing
+Verify deployments by checking Kubernetes resources:
+
+bash
+Copy
+Edit
+kubectl get all -n <namespace>
+kubectl logs <pod-name>
+Make changes to an overlay and push to the repo to observe automated updates via the CI/CD pipeline.
+
+📚 Resources
+Kustomize Documentation
+
+GitHub Actions Docs
+
+Secure Secret Management
+
+📦 Future Enhancements
+Integrate Sealed Secrets or External Secrets
+
+Add Helm comparison and migration option
+
+Monitor deployments using Prometheus + Grafana
+
+🧑‍💻 Author
+oyewunmi Gbenga Kelvin
+DevOps Engineer | Kubernetes Enthusiast
+LinkedIn • GitHub

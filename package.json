@@ -4,7 +4,7 @@
   "description": "### 1. Hypothetical Use Case: You are tasked with deploying a web application in a Kubernetes environment. The application will have different configurations for development, staging, and production environments. Your goal is to utilize Kustomize to manage these configurations efficiently and integrate the process into a CI/CD pipeline.",
   "main": "index.js",
   "scripts": {
-    "start":"node index.js"
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/kelomo2502/Implementing-a-Multi-Environment-Application-Deployment-with-Kustomize#readme",
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
   }
 }
